@@ -1,0 +1,15 @@
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\bin\Debug\net10.0\calculator.exe
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\bin\Debug\net10.0\calculator.deps.json
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\bin\Debug\net10.0\calculator.runtimeconfig.json
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\bin\Debug\net10.0\calculator.dll
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\bin\Debug\net10.0\calculator.pdb
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.AssemblyInfo.cs
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.sourcelink.json
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.dll
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\refint\calculator.dll
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.pdb
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\calculator.genruntimeconfig.cache
+C:\Users\User\source\repos\Programacion1(ITLA)\Tareas\calculator\calculator\obj\Debug\net10.0\ref\calculator.dll
