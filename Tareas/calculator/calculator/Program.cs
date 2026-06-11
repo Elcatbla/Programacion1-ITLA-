@@ -16,32 +16,46 @@
         break;
     }
 
-    Console.Write("Enter the first number: ");
-    double num1 = Convert.ToDouble(Console.ReadLine());
-
-    Console.Write("Enter the second number: ");
-    double num2 = Convert.ToDouble(Console.ReadLine());
-
-    switch (option)
+    try
     {
-        case "1":
-            Console.WriteLine($"Result: {num1 + num2}");
-            break;
+        Console.Write("Enter the first number: ");
+        double num1 = Convert.ToDouble(Console.ReadLine());
 
-        case "2":
-            Console.WriteLine($"Result: {num1 - num2}");
-            break;
+        Console.Write("Enter the second number: ");
+        double num2 = Convert.ToDouble(Console.ReadLine());
 
-        case "3":
-            Console.WriteLine($"Result: {num1 * num2}");
-            break;
+        switch (option)
+        {
+            case "1":
+                Console.WriteLine($"Result: {num1 + num2}");
+                break;
 
-        case "4":
-            Console.WriteLine($"Result: {num1 / num2}");
-            break;
+            case "2":
+                Console.WriteLine($"Result: {num1 - num2}");
+                break;
 
-        default:
-            Console.WriteLine("Invalid option.");
-            break;
+            case "3":
+                Console.WriteLine($"Result: {num1 * num2}");
+                break;
+
+            case "4":
+                if (num2 == 0)
+                {
+                    Console.WriteLine("Cannot divide by zero.");
+                }
+                else
+                {
+                    Console.WriteLine($"Result: {num1 / num2}");
+                }
+                break;
+
+            default:
+                Console.WriteLine("Invalid option.");
+                break;
+        }
+    }
+    catch
+    {
+        Console.WriteLine("Error: numbers only.");
     }
 }
