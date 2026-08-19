@@ -2,212 +2,353 @@
 using MovieRent.Data;
 using MovieRent.Models;
 
-namespace MovieRent.Services;
-
-public class RentalService(DataContext context)
+namespace MovieRent.Services
 {
-    // ---------- MOVIES ----------
-
-    public Movie AddMovie(string title, string genre, int releaseYear, int durationMinutes)
+    public class RentalService
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("The movie title cannot be empty.");
-        if (releaseYear <= 1888 || releaseYear > DateTime.Now.Year + 1)
-            throw new ArgumentException("The release year is not valid.");
-        if (durationMinutes <= 0)
-            throw new ArgumentException("The duration must be a number greater than zero.");
+        private readonly DataContext _context;
 
-        var movie = new Movie
+        public RentalService(DataContext context)
         {
-            Title = title.Trim(),
-            Genre = string.IsNullOrWhiteSpace(genre) ? "Unspecified" : genre.Trim(),
-            ReleaseYear = releaseYear,
-            DurationMinutes = durationMinutes,
-            IsAvailable = true,
-            CreatedAt = DateTime.Now
-        };
+            _context = context;
+        }
 
-        context.Movies.Add(movie);
-        context.SaveChanges();
-        return movie;
-    }
+        // MOVIES
 
-    public List<Movie> GetAllMovies() =>
-        context.Movies.OrderBy(m => m.MovieId).ToList();
-
-    public List<Movie> GetAvailableMovies() =>
-        context.Movies.Where(m => m.IsAvailable).OrderBy(m => m.MovieId).ToList();
-
-    public List<Movie> GetRentedMovies() =>
-        context.Movies.Where(m => !m.IsAvailable).OrderBy(m => m.MovieId).ToList();
-
-    public Movie GetMovieById(int id)
-    {
-        var movie = context.Movies.FirstOrDefault(m => m.MovieId == id);
-        if (movie is null)
-            throw new ArgumentException($"There is no movie with Id {id}.");
-        return movie;
-    }
-
-    public void UpdateMovie(int id, string title, string genre, int releaseYear, int durationMinutes)
-    {
-        var movie = GetMovieById(id);
-
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("The movie title cannot be empty.");
-        if (releaseYear <= 1888 || releaseYear > DateTime.Now.Year + 1)
-            throw new ArgumentException("The release year is not valid.");
-        if (durationMinutes <= 0)
-            throw new ArgumentException("The duration must be a number greater than zero.");
-
-        movie.Title = title.Trim();
-        movie.Genre = string.IsNullOrWhiteSpace(genre) ? "Unspecified" : genre.Trim();
-        movie.ReleaseYear = releaseYear;
-        movie.DurationMinutes = durationMinutes;
-        movie.UpdatedAt = DateTime.Now;
-
-        context.SaveChanges();
-    }
-
-    public void DeleteMovie(int id)
-    {
-        var movie = GetMovieById(id);
-
-        if (!movie.IsAvailable)
-            throw new InvalidOperationException("A movie that is currently rented cannot be deleted.");
-
-        context.Movies.Remove(movie);
-        context.SaveChanges();
-    }
-
-    // ---------- CUSTOMERS ----------
-
-    public Customer AddCustomer(string fullName, string idNumber, string phone)
-    {
-        if (string.IsNullOrWhiteSpace(fullName))
-            throw new ArgumentException("The customer name cannot be empty.");
-        if (string.IsNullOrWhiteSpace(idNumber))
-            throw new ArgumentException("The customer ID number cannot be empty.");
-        if (string.IsNullOrWhiteSpace(phone))
-            throw new ArgumentException("The customer phone cannot be empty.");
-        if (context.Customers.Any(c => c.IdNumber == idNumber.Trim()))
-            throw new ArgumentException("A customer with that ID number already exists.");
-
-        var customer = new Customer
+        public Movie AddMovie(string title, string genre, int releaseYear, int durationMinutes)
         {
-            FullName = fullName.Trim(),
-            IdNumber = idNumber.Trim(),
-            Phone = phone.Trim(),
-            CreatedAt = DateTime.Now
-        };
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                throw new ArgumentException("The movie title cannot be empty.");
+            }
 
-        context.Customers.Add(customer);
-        context.SaveChanges();
-        return customer;
-    }
+            if (releaseYear <= 1888 || releaseYear > DateTime.Now.Year + 1)
+            {
+                throw new ArgumentException("The release year is not valid.");
+            }
 
-    public List<Customer> GetAllCustomers() =>
-        context.Customers.OrderBy(c => c.CustomerId).ToList();
+            if (durationMinutes <= 0)
+            {
+                throw new ArgumentException("The duration must be greater than zero.");
+            }
 
-    public Customer GetCustomerById(int id)
-    {
-        var customer = context.Customers.FirstOrDefault(c => c.CustomerId == id);
-        if (customer is null)
-            throw new ArgumentException($"There is no customer with Id {id}.");
-        return customer;
-    }
+            Movie movie = new Movie();
 
-    public void UpdateCustomer(int id, string fullName, string idNumber, string phone)
-    {
-        var customer = GetCustomerById(id);
+            movie.Title = title.Trim();
 
-        if (string.IsNullOrWhiteSpace(fullName))
-            throw new ArgumentException("The customer name cannot be empty.");
-        if (string.IsNullOrWhiteSpace(idNumber))
-            throw new ArgumentException("The customer ID number cannot be empty.");
-        if (string.IsNullOrWhiteSpace(phone))
-            throw new ArgumentException("The customer phone cannot be empty.");
-        if (context.Customers.Any(c => c.IdNumber == idNumber.Trim() && c.CustomerId != id))
-            throw new ArgumentException("Another customer already has that ID number.");
+            if (string.IsNullOrWhiteSpace(genre))
+            {
+                movie.Genre = "Unspecified";
+            }
+            else
+            {
+                movie.Genre = genre.Trim();
+            }
 
-        customer.FullName = fullName.Trim();
-        customer.IdNumber = idNumber.Trim();
-        customer.Phone = phone.Trim();
-        customer.UpdatedAt = DateTime.Now;
+            movie.ReleaseYear = releaseYear;
+            movie.DurationMinutes = durationMinutes;
+            movie.IsAvailable = true;
+            movie.CreatedAt = DateTime.Now;
 
-        context.SaveChanges();
-    }
+            _context.Movies.Add(movie);
+            _context.SaveChanges();
 
-    public void DeleteCustomer(int id)
-    {
-        var customer = GetCustomerById(id);
+            return movie;
+        }
 
-        bool hasActiveRentals = context.Rentals.Any(r => r.CustomerId == id && !r.IsReturned);
-        if (hasActiveRentals)
-            throw new InvalidOperationException("A customer with pending rentals cannot be deleted.");
-
-        context.Customers.Remove(customer);
-        context.SaveChanges();
-    }
-
-    // ---------- RENTALS ----------
-
-    public Rental CreateRental(int movieId, int customerId, DateTime rentalDate, DateTime dueDate)
-    {
-        var movie = GetMovieById(movieId);
-        var customer = GetCustomerById(customerId);
-
-        if (!movie.IsAvailable)
-            throw new InvalidOperationException($"The movie '{movie.Title}' is not available for rental.");
-        if (dueDate < rentalDate)
-            throw new ArgumentException("The due date cannot be earlier than the rental date.");
-
-        var rental = new Rental
+        public List<Movie> GetAllMovies()
         {
-            MovieId = movie.MovieId,
-            CustomerId = customer.CustomerId,
-            RentalDate = rentalDate,
-            DueDate = dueDate,
-            IsReturned = false,
-            CreatedAt = DateTime.Now
-        };
+            return _context.Movies
+                .OrderBy(m => m.MovieId)
+                .ToList();
+        }
 
-        movie.IsAvailable = false;
+        public List<Movie> GetAvailableMovies()
+        {
+            return _context.Movies
+                .Where(m => m.IsAvailable == true)
+                .OrderBy(m => m.MovieId)
+                .ToList();
+        }
 
-        context.Rentals.Add(rental);
-        context.SaveChanges();
-        return rental;
+        public List<Movie> GetRentedMovies()
+        {
+            return _context.Movies
+                .Where(m => m.IsAvailable == false)
+                .OrderBy(m => m.MovieId)
+                .ToList();
+        }
+
+        public Movie GetMovieById(int id)
+        {
+            Movie movie = _context.Movies
+                .FirstOrDefault(m => m.MovieId == id);
+
+            if (movie == null)
+            {
+                throw new ArgumentException("There is no movie with that ID.");
+            }
+
+            return movie;
+        }
+
+        public void UpdateMovie(int id, string title, string genre, int releaseYear, int durationMinutes)
+        {
+            Movie movie = GetMovieById(id);
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                throw new ArgumentException("The movie title cannot be empty.");
+            }
+
+            if (releaseYear <= 1888 || releaseYear > DateTime.Now.Year + 1)
+            {
+                throw new ArgumentException("The release year is not valid.");
+            }
+
+            if (durationMinutes <= 0)
+            {
+                throw new ArgumentException("The duration must be greater than zero.");
+            }
+
+            movie.Title = title.Trim();
+
+            if (string.IsNullOrWhiteSpace(genre))
+            {
+                movie.Genre = "Unspecified";
+            }
+            else
+            {
+                movie.Genre = genre.Trim();
+            }
+
+            movie.ReleaseYear = releaseYear;
+            movie.DurationMinutes = durationMinutes;
+            movie.UpdatedAt = DateTime.Now;
+
+            _context.SaveChanges();
+        }
+
+        public void DeleteMovie(int id)
+        {
+            Movie movie = GetMovieById(id);
+
+            if (movie.IsAvailable == false)
+            {
+                throw new InvalidOperationException(
+                    "A movie that is currently rented cannot be deleted.");
+            }
+
+            _context.Movies.Remove(movie);
+            _context.SaveChanges();
+        }
+
+
+        // CUSTOMERS
+
+        public Customer AddCustomer(string fullName, string idNumber, string phone)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                throw new ArgumentException("The customer name cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(idNumber))
+            {
+                throw new ArgumentException("The customer ID number cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                throw new ArgumentException("The customer phone cannot be empty.");
+            }
+
+            Customer existingCustomer = _context.Customers
+                .FirstOrDefault(c => c.IdNumber == idNumber.Trim());
+
+            if (existingCustomer != null)
+            {
+                throw new ArgumentException(
+                    "A customer with that ID number already exists.");
+            }
+
+            Customer customer = new Customer();
+
+            customer.FullName = fullName.Trim();
+            customer.IdNumber = idNumber.Trim();
+            customer.Phone = phone.Trim();
+            customer.CreatedAt = DateTime.Now;
+
+            _context.Customers.Add(customer);
+            _context.SaveChanges();
+
+            return customer;
+        }
+
+        public List<Customer> GetAllCustomers()
+        {
+            return _context.Customers
+                .OrderBy(c => c.CustomerId)
+                .ToList();
+        }
+
+        public Customer GetCustomerById(int id)
+        {
+            Customer customer = _context.Customers
+                .FirstOrDefault(c => c.CustomerId == id);
+
+            if (customer == null)
+            {
+                throw new ArgumentException(
+                    "There is no customer with that ID.");
+            }
+
+            return customer;
+        }
+
+        public void UpdateCustomer(int id, string fullName, string idNumber, string phone)
+        {
+            Customer customer = GetCustomerById(id);
+
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                throw new ArgumentException(
+                    "The customer name cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(idNumber))
+            {
+                throw new ArgumentException(
+                    "The customer ID number cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                throw new ArgumentException(
+                    "The customer phone cannot be empty.");
+            }
+
+            Customer otherCustomer = _context.Customers
+                .FirstOrDefault(c =>
+                    c.IdNumber == idNumber.Trim() &&
+                    c.CustomerId != id);
+
+            if (otherCustomer != null)
+            {
+                throw new ArgumentException(
+                    "Another customer already has that ID number.");
+            }
+
+            customer.FullName = fullName.Trim();
+            customer.IdNumber = idNumber.Trim();
+            customer.Phone = phone.Trim();
+            customer.UpdatedAt = DateTime.Now;
+
+            _context.SaveChanges();
+        }
+
+        public void DeleteCustomer(int id)
+        {
+            Customer customer = GetCustomerById(id);
+
+            bool hasActiveRentals = _context.Rentals
+                .Any(r => r.CustomerId == id && r.IsReturned == false);
+
+            if (hasActiveRentals)
+            {
+                throw new InvalidOperationException(
+                    "A customer with pending rentals cannot be deleted.");
+            }
+
+            _context.Customers.Remove(customer);
+            _context.SaveChanges();
+        }
+
+
+        // RENTALS
+
+        public Rental CreateRental(
+            int movieId,
+            int customerId,
+            DateTime rentalDate,
+            DateTime dueDate)
+        {
+            Movie movie = GetMovieById(movieId);
+            Customer customer = GetCustomerById(customerId);
+
+            if (movie.IsAvailable == false)
+            {
+                throw new InvalidOperationException(
+                    "The movie is not available for rental.");
+            }
+
+            if (dueDate < rentalDate)
+            {
+                throw new ArgumentException(
+                    "The due date cannot be earlier than the rental date.");
+            }
+
+            Rental rental = new Rental();
+
+            rental.MovieId = movie.MovieId;
+            rental.CustomerId = customer.CustomerId;
+            rental.RentalDate = rentalDate;
+            rental.DueDate = dueDate;
+            rental.IsReturned = false;
+            rental.CreatedAt = DateTime.Now;
+
+            movie.IsAvailable = false;
+
+            _context.Rentals.Add(rental);
+            _context.SaveChanges();
+
+            return rental;
+        }
+
+        public void ReturnRental(int rentalId)
+        {
+            Rental rental = _context.Rentals
+                .FirstOrDefault(r => r.RentalId == rentalId);
+
+            if (rental == null)
+            {
+                throw new ArgumentException(
+                    "There is no rental with that ID.");
+            }
+
+            if (rental.IsReturned == true)
+            {
+                throw new InvalidOperationException(
+                    "This rental was already returned.");
+            }
+
+            Movie movie = GetMovieById(rental.MovieId);
+
+            rental.IsReturned = true;
+            rental.ReturnDate = DateTime.Now;
+
+            movie.IsAvailable = true;
+
+            _context.SaveChanges();
+        }
+
+        public List<Rental> GetAllRentals()
+        {
+            return _context.Rentals
+                .Include(r => r.Movie)
+                .Include(r => r.Customer)
+                .OrderBy(r => r.RentalId)
+                .ToList();
+        }
+
+        public List<Rental> GetPendingRentals()
+        {
+            return _context.Rentals
+                .Include(r => r.Movie)
+                .Include(r => r.Customer)
+                .Where(r => r.IsReturned == false)
+                .OrderBy(r => r.RentalId)
+                .ToList();
+        }
     }
-
-    public void ReturnRental(int rentalId)
-    {
-        var rental = context.Rentals.FirstOrDefault(r => r.RentalId == rentalId);
-        if (rental is null)
-            throw new ArgumentException($"There is no rental with Id {rentalId}.");
-        if (rental.IsReturned)
-            throw new InvalidOperationException("This rental was already returned.");
-
-        var movie = GetMovieById(rental.MovieId);
-
-        rental.IsReturned = true;
-        rental.ReturnDate = DateTime.Now;
-        movie.IsAvailable = true;
-
-        context.SaveChanges();
-    }
-
-    public List<Rental> GetAllRentals() =>
-        context.Rentals
-            .Include(r => r.Movie)
-            .Include(r => r.Customer)
-            .OrderBy(r => r.RentalId)
-            .ToList();
-
-    public List<Rental> GetPendingRentals() =>
-        context.Rentals
-            .Include(r => r.Movie)
-            .Include(r => r.Customer)
-            .Where(r => !r.IsReturned)
-            .OrderBy(r => r.RentalId)
-            .ToList();
 }
